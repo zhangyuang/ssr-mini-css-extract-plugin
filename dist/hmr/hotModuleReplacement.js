@@ -205,8 +205,9 @@ module.exports = function (moduleId, options) {
       const { manifest, fePort, https } = ssrDevInfo
       Object.values(manifest).filter(item => item.endsWith('.css')).forEach(css => {
         const link = document.createElement('link')
-        const href = css.startsWith('http') ? css : `${https ? 'https' : 'http'}://localhost:${fePort}${css}`
+        const href = css.startsWith('http') ? `${css}?${Date.now()}` : `${https ? 'https' : 'http'}://localhost:${fePort}${css}?${Date.now()}`
         link.setAttribute('href', href)
+        link.setAttribute('rel', 'stylesheet')
         document.querySelector('body').appendChild(link)
       })
     } else {
