@@ -31,12 +31,23 @@ function debounce(fn, time) {
 
 function noop() { }
 
-async function getCurrentScriptUrl(moduleId) {
+function fetchDataSync(url) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, false); // false 表示同步请求
+  xhr.send(null);
+
+  if (xhr.status === 200) {
+    return JSON.parse(xhr.responseText);
+  } else {
+    throw new Error(`Request failed with status ${xhr.status}`);
+  }
+}
+function getCurrentScriptUrl(moduleId) {
   var src = srcByModuleId[moduleId];
   if (window.microApp && !src) {
     var fileName = moduleId.split('!').at(-1)
     var href = `/chunkMap.json`
-    var map = await fetch(href).then(res => res.json())
+    var map = fetchDataSync(href)
     src = map[fileName]
   } else if (!src) {
     if (document.currentScript) {
@@ -201,9 +212,9 @@ module.exports = function (moduleId, options) {
     return noop;
   }
 
+  var getScriptSrc = getCurrentScriptUrl(moduleId);
 
-  async function update() {
-    var getScriptSrc = await getCurrentScriptUrl(moduleId);
+  function update() {
     if (window.microApp) {
       const src = getScriptSrc(options.filename);
       const { manifest } = window.ssrDevInfo;
