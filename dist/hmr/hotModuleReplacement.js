@@ -42,13 +42,17 @@ function fetchDataSync(url) {
     throw new Error(`Request failed with status ${xhr.status}`);
   }
 }
+let map = {}
+if (window.microApp) {
+  const { fePort, https } = window.ssrDevInfo;
+  const href = `${https ? 'https' : 'http'}://127.0.0.1:${fePort}/chunkMap.json`
+  map = fetchDataSync(href)
+}
+
 function getCurrentScriptUrl(moduleId) {
   var src = srcByModuleId[moduleId];
   if (window.microApp && !src) {
-    const { fePort, https } = window.ssrDevInfo;
     var fileName = moduleId.split('!').at(-1)
-    var href = `${https ? 'https' : 'http'}://127.0.0.1:${fePort}/chunkMap.json`
-    var map = fetchDataSync(href)
     src = map[fileName]
     srcByModuleId[moduleId] = src
   } else if (!src) {
