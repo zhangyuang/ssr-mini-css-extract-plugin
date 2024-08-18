@@ -50,6 +50,7 @@ function getCurrentScriptUrl(moduleId) {
     var href = `${https ? 'https' : 'http'}://127.0.0.1:${fePort}/chunkMap.json`
     var map = fetchDataSync(href)
     src = map[fileName]
+    srcByModuleId[moduleId] = src
   } else if (!src) {
     if (document.currentScript) {
       src = document.currentScript.src;
@@ -227,7 +228,6 @@ module.exports = function (moduleId, options) {
           link.href = href
           link.rel = 'stylesheet';
           link.type = 'text/css';
-          console.log('link', link);
           document.head.appendChild(link);
         });
     } else {
