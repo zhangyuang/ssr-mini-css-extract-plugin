@@ -45,8 +45,9 @@ function fetchDataSync(url) {
 function getCurrentScriptUrl(moduleId) {
   var src = srcByModuleId[moduleId];
   if (window.microApp && !src) {
+    const { fePort, https } = window.ssrDevInfo;
     var fileName = moduleId.split('!').at(-1)
-    var href = `/chunkMap.json`
+    var href = `${https ? 'https' : 'http'}://127.0.0.1:${fePort}/chunkMap.json`
     var map = fetchDataSync(href)
     src = map[fileName]
   } else if (!src) {
@@ -217,12 +218,13 @@ module.exports = function (moduleId, options) {
   function update() {
     if (window.microApp) {
       const src = getScriptSrc(options.filename);
-      const { manifest } = window.ssrDevInfo;
+      const { manifest, fePort, https } = window.ssrDevInfo;
       src.map(item => item.startsWith('http') ? item : manifest[item + '.css'])
         .forEach(item => {
           console.log('[HMR] css reload %s', item);
           const link = document.createElement('link');
-          link.href = `${item}?${Date.now()}`;
+          const href = `${https ? 'https' : 'http'}://127.0.0.1:${fePort}${item}?${Date.now()}`
+          link.href = href
           link.rel = 'stylesheet';
           link.type = 'text/css';
           console.log('link', link);
