@@ -29,12 +29,16 @@ function debounce(fn, time) {
   };
 }
 
-function noop() {}
+function noop() { }
 
-function getCurrentScriptUrl(moduleId) {
+async function getCurrentScriptUrl(moduleId) {
   var src = srcByModuleId[moduleId];
-
-  if (!src) {
+  if (window.microApp && !src) {
+    var fileName = moduleId.split('!').at(-1)
+    var href = `/chunkMap.json`
+    var map = await fetch(href).then(res => res.json())
+    src = map[fileName]
+  } else if (!src) {
     if (document.currentScript) {
       src = document.currentScript.src;
     } else {
@@ -197,29 +201,33 @@ module.exports = function (moduleId, options) {
     return noop;
   }
 
-  var getScriptSrc = getCurrentScriptUrl(moduleId);
 
-  function update() {
+  async function update() {
+    var getScriptSrc = await getCurrentScriptUrl(moduleId);
     if (window.microApp) {
-      const { ssrDevInfo } = window
-      const { manifest, fePort, https } = ssrDevInfo
-      Object.values(manifest).filter(item => item.endsWith('.css')).forEach(css => {
-        const link = document.createElement('link')
-        const href = css.startsWith('http') ? `${css}?${Date.now()}` : `${https ? 'https' : 'http'}://localhost:${fePort}${css}?${Date.now()}`
-        link.setAttribute('href', href)
-        link.setAttribute('rel', 'stylesheet')
-        document.querySelector('body').appendChild(link)
-      })
+      const src = getScriptSrc(options.filename);
+      const { manifest } = window.ssrDevInfo;
+      src.map(item => item.startsWith('http') ? item : manifest[item + '.css'])
+        .forEach(item => {
+          console.log('[HMR] css reload %s', item);
+          const link = document.createElement('link');
+          link.href = `${item}?${Date.now()}`;
+          link.rel = 'stylesheet';
+          link.type = 'text/css';
+          console.log('link', link);
+          document.head.appendChild(link);
+        });
     } else {
       var src = getScriptSrc(options.filename);
+
       var reloaded = reloadStyle(src);
-  
+
       if (options.locals) {
         console.log('[HMR] Detected local css modules. Reload all css');
         reloadAll();
         return;
       }
-  
+
       if (reloaded) {
         console.log('[HMR] css reload %s', src.join(' '));
       } else {
