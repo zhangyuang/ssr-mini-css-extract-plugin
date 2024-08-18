@@ -223,7 +223,7 @@ module.exports = function (moduleId, options) {
         .forEach(item => {
           console.log('[HMR] css reload %s', item);
           const link = document.createElement('link');
-          const href = item.startsWith('http') ? item : `${https ? 'https' : 'http'}://127.0.0.1:${fePort}${item}?${Date.now()}`
+          const href = item.startsWith('http') ? `${item}?${Date.now()}` : `${https ? 'https' : 'http'}://127.0.0.1:${fePort}${item}?${Date.now()}`
           link.href = href
           link.rel = 'stylesheet';
           link.type = 'text/css';
