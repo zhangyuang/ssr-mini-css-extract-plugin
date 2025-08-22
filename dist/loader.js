@@ -256,8 +256,8 @@ function pitch(request) {
     });
   });
   let source;
-  const isWebpack4 = childCompiler.webpack ? false : typeof childCompiler.resolvers !== 'undefined';
-
+  // const isWebpack4 = childCompiler.webpack ? false : typeof childCompiler.resolvers !== 'undefined';
+  const isWebpack4 = true;
   if (isWebpack4) {
     childCompiler.hooks.afterCompile.tap(_index.pluginName, compilation => {
       source = compilation.assets[childFilename] && compilation.assets[childFilename].source(); // Remove all chunk assets
